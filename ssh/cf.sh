@@ -1,19 +1,23 @@
 #!/bin/bash
-# Edition : Stable Edition V3.0
-# Auther  : Geo Project
-# (C) Copyright 2023
-# =========================================
-MYIP=$(wget -qO- ipinfo.io/ip);
+red='\e[1;31m'
+green='\e[0;32m'
+NC='\e[0m'
 clear
-apt install jq curl -y >/dev/null 2>&1
-read -rp "Sub Domain (Contoh: hcstore123): " -e sub
-DOMAIN=hcstore.my.id
-SUB_DOMAIN=${sub}.hcstore.my.id
-CF_ID=herman.anza@gmail.com
-CF_KEY=72b409eff9a389248440a607c2d1f08173801
+read -rp "Masukkan Domain: " -e DOMAIN
+echo ""
+echo "Domain: ${DOMAIN}" 
+echo ""
+read -rp "Masukkan Subdomain: " -e sub
+SUB_DOMAIN=${sub}.${DOMAIN}
+echo ""
+read -rp "Masukkan Email Cloudflare: " -e ID
+CF_ID=${ID}
+echo ""
+read -rp "Masukkan Auth-Key Cloudflare: " -e KEY
+CF_KEY=${KEY}
 set -euo pipefail
-IP=$(wget -qO- ifconfig.me/ip);
-echo "Updating DNS for ${SUB_DOMAIN}..."
+IP=$(wget -qO- http://ipecho.net/plain );
+echo "Pointing DNS Untuk Domain ${SUB_DOMAIN}..."
 ZONE=$(curl -sLX GET "https://api.cloudflare.com/client/v4/zones?name=${DOMAIN}&status=active" \
      -H "X-Auth-Email: ${CF_ID}" \
      -H "X-Auth-Key: ${CF_KEY}" \
@@ -38,7 +42,7 @@ RESULT=$(curl -sLX PUT "https://api.cloudflare.com/client/v4/zones/${ZONE}/dns_r
      -H "Content-Type: application/json" \
      --data '{"type":"A","name":"'${SUB_DOMAIN}'","content":"'${IP}'","ttl":120,"proxied":false}')
 echo "Host : $SUB_DOMAIN"
-echo "IP=" >> /var/lib/kyt/ipvps.conf
+echo "IP=$SUB_DOMAIN" >> /var/lib/kyt/ipvps.conf
 echo $SUB_DOMAIN > /etc/xray/domain
 echo $SUB_DOMAIN > /root/domain
 rm -f /root/cf.sh
